@@ -1,4 +1,5 @@
 import os
+import time
 from openai import OpenAI
 
 # ==============================================================================
@@ -10,7 +11,7 @@ from openai import OpenAI
 # ==============================================================================
 
 # 👉 Paste your Cloudflare Tunnel URL here:
-COLAB_TUNNEL_URL = "https://czwof-34-126-119-41.a.free.pinggy.link"
+COLAB_TUNNEL_URL = "https://tcedt-34-126-107-98.a.free.pinggy.link"
 
 # The OpenAI client needs the standard `/v1` suffix appended to the base URL
 OLLAMA_BASE_URL = f"{COLAB_TUNNEL_URL}/v1"
@@ -31,8 +32,10 @@ def test_colab_connection():
     
     try:
         # We query the mistral model (or whichever one you pulled in Colab)
+        start_time = time.time()
+        
         response = client.chat.completions.create(
-            model="mistral",
+            model="gpt-oss:20b",
             messages=[
                 {"role": "system", "content": "You are a helpful AI assistant running on Google Colab hardware."},
                 {"role": "user", "content": "Hello! Where are you currently running from?"}
@@ -41,8 +44,14 @@ def test_colab_connection():
             max_tokens=200
         )
         
+        end_time = time.time()
+        round_trip_time = end_time - start_time
+        tokens = response.usage.completion_tokens
+        tps = tokens / round_trip_time
+        
         reply = response.choices[0].message.content
         print("\n✅ CONNECTION SUCCESSFUL!")
+        print(f"⏱️  Speed: {tps:.2f} tokens/second ({round_trip_time:.2f}s total latency)")
         print("🤖 Model Response:")
         print("-" * 40)
         print(reply)

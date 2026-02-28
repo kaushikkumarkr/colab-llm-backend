@@ -59,6 +59,26 @@ client = OpenAI(
 )
 ```
 
+## Increasing Context Window Size (32k+)
+By default, requesting a large context window will cause Out-Of-Memory (OOM) crashes on standard Colab GPUs like the L4 or T4. To fix this and unlock massive 32,000+ token contexts for DeepAgents:
+
+1. **In the Colab Notebook**: Set the KV Cache Quantization environment variable *before* starting Ollama:
+   ```python
+   import os
+   os.environ["OLLAMA_KV_CACHE_TYPE"] = "q8_0"
+   ```
+2. **In your local LangChain / DeepAgents code**: Explicitly pass the `num_ctx` option within `extra_body` for the `ChatOpenAI` client so the parameter gets routed to the Ollama backend correctly:
+   ```python
+   from langchain_openai import ChatOpenAI
+   
+   llm = ChatOpenAI(
+       base_url="https://YOUR-PINGGY-URL.a.free.pinggy.link/v1", 
+       api_key="ollama", 
+       model="qwen2.5:32b", 
+       model_kwargs={"extra_body": {"options": {"num_ctx": 32768}}}
+   )
+   ```
+
 ## Troubleshooting
 - **Connection Hanging / Timeout**: Ensure the cell running the Pinggy script in Colab is still active. Colab instances will disconnect if left idle for too long.
 - **Model Doesn't Load**: By default, the script pulls the `mistral` model. If you request a different model like `llama3` in your python code without changing the `MODEL_NAME` variable in the Colab script first, it will fail.
